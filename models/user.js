@@ -11,7 +11,8 @@ const userSchema=mongoose.Schema({
     },
     EmailAddress: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     PhoneNumber: {
         type: String,

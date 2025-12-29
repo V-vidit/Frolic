@@ -9,10 +9,17 @@ const router=express.Router();
 router.post("/register", async(req,res)=>{
     try{
         const {UserName, UserPassword, EmailAddress, PhoneNumber, isAdmin}= req.body;
-        
+
         if (!UserName || !UserPassword || !EmailAddress || !PhoneNumber || isAdmin===undefined) {
             return res.status(400).json({message: "Missing Credentials"})
         }
+
+        const userExists= await User.findOne({EmailAddress});
+
+        if (userExists) {
+            return res.status(409).json({message: "User already exixts"});
+        }
+        
 
         const hashedPassword= await bcrypt.hash(UserPassword,10);
 
@@ -24,7 +31,13 @@ router.post("/register", async(req,res)=>{
             isAdmin
         });
 
-        res.json({message: "User created successfully", createdUser: user});
+        res.json({message: "User created successfully", 
+            newUser: {
+                id: user._id,
+                username: user.UserName,
+                email: user.EmailAddress
+            }
+        });
     }
     catch(err){
         res.status(500).json({message: "Internal Server Error"});
@@ -38,13 +51,13 @@ router.post("/login", async(req,res)=>{
         const user= await User.findOne({EmailAddress});
 
         if (!user) {
-            return res.status(400).json({message: "Invalid Credentails"});
+            return res.status(401).json({message: "Invalid Credentails"});
         }
 
         const isMatch= await bcrypt.compare(UserPassword, user.UserPassword);
 
         if (!isMatch) {
-            return res.status(400).json({message: "Invalid Credentials"});
+            return res.status(401).json({message: "Invalid Credentials"});
         }        
 
         const token= jwt.sign(
