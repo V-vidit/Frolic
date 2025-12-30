@@ -326,7 +326,7 @@ router.get("/:id/winners", authMiddleware, async(req,res)=>{
 
         const winners=await EventWiseWinners.find({
             EventID: id,
-        }).populate("EventID", "EventName EventFess")
+        }).populate("EventID", "EventName EventFees")
         .populate("GroupID", "GroupName")
         .sort({sequence: 1});
 
